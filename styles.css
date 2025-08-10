@@ -1,0 +1,36 @@
+/* Estilo base para la fuente y el fondo */
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #111827; /* bg-gray-900 */
+    color: #f9fafb; /* text-gray-50 */
+}
+
+/* Estilo para la barra de desplazamiento */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: #1f2937; }
+::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: #6b7280; }
+
+/* Animación para la aparición de los tickets */
+.ticket-card { animation: fadeIn 0.5s ease-in-out; }
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Estilos del calendario */
+.calendar-day.has-tickets::after {
+    content: '';
+    position: absolute;
+    bottom: 6px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background-color: #22d3ee; /* cyan-400 */
+}
+.calendar-day.selected {
+    background-color: #0891b2 !important; /* cyan-600 */
+    color: white !important;
+}

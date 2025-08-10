@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Gestión de Tickets con Calendario</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <!-- Tus estilos -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="antialiased">
+
+    <div id="app" class="container mx-auto p-4 sm:p-6 lg:p-8 max-w-5xl">
+        
+        <header class="mb-8 text-center">
+            <h1 class="text-3xl sm:text-4xl font-bold text-white flex items-center justify-center gap-3">
+                <i class="ph ph-ticket text-cyan-400"></i>
+                Gestor de Tickets Diarios
+            </h1>
+            <p class="text-gray-400 mt-2">Registra y visualiza tus tickets por fecha.</p>
+            <div id="auth-info" class="mt-4 text-xs text-gray-500">
+                <span id="user-id-display"></span>
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Columna del formulario y calendario -->
+            <div class="lg:col-span-1 space-y-8">
+                <!-- Formulario para añadir nuevos tickets -->
+                <div class="bg-gray-800 p-6 rounded-2xl shadow-lg">
+                    <h2 class="text-xl font-semibold mb-4 text-white">Añadir Nuevo Ticket</h2>
+                    <form id="add-ticket-form" class="space-y-4">
+                        <div>
+                            <label for="ticket-date" class="block text-sm font-medium text-gray-300 mb-2">Fecha del Ticket</label>
+                            <input type="date" id="ticket-date" required class="w-full bg-gray-700 border border-gray-600 text-white rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition">
+                        </div>
+                        <div>
+                            <label for="ticket-id" class="block text-sm font-medium text-gray-300 mb-2">ID o Nombre del Ticket</label>
+                            <input type="text" id="ticket-id" required placeholder="Ej: #12345, Error de login" class="w-full bg-gray-700 border border-gray-600 text-white rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition">
+                        </div>
+                        <div>
+                            <label for="ticket-status" class="block text-sm font-medium text-gray-300 mb-2">Ubicación / Estado</label>
+                            <select id="ticket-status" required class="w-full bg-gray-700 border border-gray-600 text-white rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition">
+                                <option value="Desarrollo">Desarrollo</option>
+                                <option value="CEO">En manos del CEO</option>
+                                <option value="Payments Way">Payments Way</option>
+                                <option value="Soporte N1">Soporte N1</option>
+                                <option value="Finalizado">Finalizado</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="ticket-response" class="block text-sm font-medium text-gray-300 mb-2">Respuesta / Comentarios</label>
+                            <textarea id="ticket-response" required rows="3" placeholder="Ej: Se escaló al equipo de desarrollo..." class="w-full bg-gray-700 border border-gray-600 text-white rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition"></textarea>
+                        </div>
+                        <div class="text-right pt-2">
+                            <button type="submit" class="bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-2 px-6 rounded-lg transition-transform transform hover:scale-105 flex items-center gap-2 ml-auto">
+                                <i class="ph ph-plus-circle"></i>
+                                Añadir Ticket
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Calendario -->
+                <div class="bg-gray-800 p-6 rounded-2xl shadow-lg">
+                    <div class="flex items-center justify-between mb-4">
+                        <button id="prev-month" class="p-2 rounded-full hover:bg-gray-700 transition"><i class="ph ph-caret-left"></i></button>
+                        <h3 id="month-year" class="text-lg font-semibold text-white"></h3>
+                        <button id="next-month" class="p-2 rounded-full hover:bg-gray-700 transition"><i class="ph ph-caret-right"></i></button>
+                    </div>
+                    <div id="calendar-grid" class="grid grid-cols-7 gap-1 text-center">
+                        <!-- Días de la semana -->
+                        <div class="text-xs font-bold text-gray-400">D</div>
+                        <div class="text-xs font-bold text-gray-400">L</div>
+                        <div class="text-xs font-bold text-gray-400">M</div>
+                        <div class="text-xs font-bold text-gray-400">M</div>
+                        <div class="text-xs font-bold text-gray-400">J</div>
+                        <div class="text-xs font-bold text-gray-400">V</div>
+                        <div class="text-xs font-bold text-gray-400">S</div>
+                        <!-- Días del mes se insertarán aquí -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Columna de la lista de tickets -->
+            <div class="lg:col-span-2">
+                 <h2 id="tickets-list-title" class="text-xl font-semibold mb-4 text-white">Tickets</h2>
+                 <div id="tickets-list" class="space-y-4">
+                    <div id="loading-state" class="text-center py-10">
+                        <p class="text-gray-400">Cargando tickets...</p>
+                    </div>
+                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para editar tickets -->
+    <div id="edit-modal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 hidden z-50">
+        <div class="bg-gray-800 rounded-2xl shadow-lg p-6 w-full max-w-lg">
+             <h2 class="text-xl font-semibold mb-4 text-white">Editar Ticket</h2>
+             <form id="edit-ticket-form" class="space-y-4">
+                <input type="hidden" id="edit-doc-id">
+                <div>
+                    <label for="edit-ticket-date" class="block text-sm font-medium text-gray-300 mb-2">Fecha del Ticket</label>
+                    <input type="date" id="edit-ticket-date" required class="w-full bg-gray-700 border border-gray-600 text-white rounded-lg px-4 py-2">
+                </div>
+                <div>
+                    <label for="edit-ticket-id" class="block text-sm font-medium text-gray-300 mb-2">ID o Nombre del Ticket</label>
+                    <input type="text" id="edit-ticket-id" required class="w-full bg-gray-700 border border-gray-600 text-white rounded-lg px-4 py-2">
+                </div>
+                <div>
+                    <label for="edit-ticket-status" class="block text-sm font-medium text-gray-300 mb-2">Ubicación / Estado</label>
+                    <select id="edit-ticket-status" required class="w-full bg-gray-700 border border-gray-600 text-white rounded-lg px-4 py-2">
+                        <option value="Desarrollo">Desarrollo</option>
+                        <option value="CEO">En manos del CEO</option>
+                        <option value="Payments Way">Payments Way</option>
+                        <option value="Soporte N1">Soporte N1</option>
+                        <option value="Finalizado">Finalizado</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="edit-ticket-response" class="block text-sm font-medium text-gray-300 mb-2">Respuesta / Comentarios</label>
+                    <textarea id="edit-ticket-response" required rows="4" class="w-full bg-gray-700 border border-gray-600 text-white rounded-lg px-4 py-2"></textarea>
+                </div>
+                <div class="mt-6 flex justify-end gap-4">
+                    <button type="button" id="cancel-edit" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg transition">Cancelar</button>
+                    <button type="submit" class="bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-2 px-4 rounded-lg transition">Guardar Cambios</button>
+                </div>
+             </form>
+        </div>
+    </div>
+
+    <!-- Tu JS como módulo -->
+    <script type="module" src="app.js"></script>
+</body>
+</html>
